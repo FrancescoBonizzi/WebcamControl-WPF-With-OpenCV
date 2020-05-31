@@ -12,9 +12,9 @@ namespace WebcamWithOpenCV
             _webcamStreaming = new WebcamStreaming(webcamPreview, 300, 300);
         }
 
-        private async void btnStart_Click(object sender, RoutedEventArgs e)
+        private void btnStart_Click(object sender, RoutedEventArgs e)
         {
-            await _webcamStreaming.Start();
+            _webcamStreaming.Start();
             btnStop.IsEnabled = true;
             btnStart.IsEnabled = false;
         }

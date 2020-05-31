@@ -25,8 +25,8 @@ namespace WebcamWithOpenCV
         public byte[] LastPngFrame { get; private set; }
 
         public WebcamStreaming(
-            Image imageControlForRendering, 
-            int frameWidth, 
+            Image imageControlForRendering,
+            int frameWidth,
             int frameHeight)
         {
             _imageControlForRendering = imageControlForRendering;
@@ -34,73 +34,74 @@ namespace WebcamWithOpenCV
             _frameHeight = frameHeight;
         }
 
-        public async Task Start(bool convertToFakeThermalImage = false)
+        public void Start()
         {
-            // Non ne faccio mai andare due in contemporanea perché si creerebbe contention sul _lastFrame
+            // Never run two parallel tasks for the webcam streaming
             if (_previewTask != null && !_previewTask.IsCompleted)
                 return;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            _previewTask = Task.Run(async () =>
+            if (_videoCapture == null)
             {
-                if (_videoCapture == null)
+                _videoCapture = new VideoCapture(0);
+                if (!_videoCapture.Open(0))
                 {
-                    _videoCapture = new VideoCapture(0);
-                    _videoCapture.Open(0);
-                    _videoCapture.FrameWidth = _frameWidth;
-                    _videoCapture.FrameHeight = _frameHeight;
+                    throw new ApplicationException("Cannot connect to the Webcam");
                 }
 
-                using (var frame = new Mat())
+                _videoCapture.FrameWidth = _frameWidth;
+                _videoCapture.FrameHeight = _frameHeight;
+            }
+
+            _previewTask = Task.Run(async () =>
                 {
-                    while (!_cancellationTokenSource.IsCancellationRequested)
+                    using (var frame = new Mat())
                     {
-                        _videoCapture.Read(frame);
-
-                        if (!frame.Empty())
+                        while (!_cancellationTokenSource.IsCancellationRequested)
                         {
-                            _lastFrame = BitmapConverter.ToBitmap(frame);
-                            var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
-                            lastFrameBitmapImage.Freeze();
+                            _videoCapture.Read(frame);
 
-                            _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
-                            await Task.Delay(10);
+                            if (!frame.Empty())
+                            {
+                                _lastFrame = BitmapConverter.ToBitmap(frame);
+                                var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
+                                lastFrameBitmapImage.Freeze();
+
+                                _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
+                                await Task.Delay(10);
+                            }
                         }
                     }
-                }
-            }, _cancellationTokenSource.Token);
+                }, _cancellationTokenSource.Token);
 
-            // Per attendere l'inizializzazione della VideoCapture
-            const int maxTentatives = 10;
-            for (int i = 0; i < maxTentatives; ++i)
-            {
-                if (_videoCapture != null && _videoCapture.IsOpened())
-                {
-                    return;
-                }
-                else
-                {
-                    await Task.Delay(1000);
-                }
-            }
+            //// To wait for VideoCapture initialization
+            //const int maxTentatives = 10;
+            //for (int i = 0; i < maxTentatives; ++i)
+            //{
+            //    if (_videoCapture != null && _videoCapture.IsOpened())
+            //    {
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        await Task.Delay(1000);
+            //    }
+            //}
 
             if (_previewTask.IsFaulted)
                 throw _previewTask.Exception;
-            else
-                throw new ApplicationException("Cannot connect to the Webcam");
         }
 
         public async Task Stop()
         {
-            // Può accadere che venga chiamato prima il dispose dello stop,
-            // se la pagina viene chiusa velocemente
+            // If "Dispose" gets called before Stop
             if (_cancellationTokenSource.IsCancellationRequested)
                 return;
 
             _cancellationTokenSource.Cancel();
 
-            // Aspetto che termini, così non ho conflitti con la lettura/scrittura di _lastFrame
+            // Wait for it, to avoid conflicts with read/write of _lastFrame
             await _previewTask;
 
             if (_lastFrame != null)
