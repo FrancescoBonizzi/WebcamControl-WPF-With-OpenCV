@@ -34,7 +34,7 @@ namespace WebcamWithOpenCV
             _frameHeight = frameHeight;
         }
 
-        public void Start()
+        public async Task Start()
         {
             // Never run two parallel tasks for the webcam streaming
             if (_previewTask != null && !_previewTask.IsCompleted)
@@ -44,36 +44,39 @@ namespace WebcamWithOpenCV
 
             if (_videoCapture == null)
             {
-                _videoCapture = new VideoCapture(0);
-                if (!_videoCapture.Open(0))
+                // Async to have the possibility to show an animated loader without freezing the GUI
+                await Task.Run(() =>
                 {
-                    throw new ApplicationException("Cannot connect to the Webcam");
-                }
-
-                _videoCapture.FrameWidth = _frameWidth;
-                _videoCapture.FrameHeight = _frameHeight;
+                    _videoCapture = new VideoCapture(0);
+                    if (!_videoCapture.Open(0))
+                    {
+                        throw new ApplicationException("Cannot connect to the Webcam");
+                    }
+                    _videoCapture.FrameWidth = _frameWidth;
+                    _videoCapture.FrameHeight = _frameHeight;
+                });
             }
 
             _previewTask = Task.Run(async () =>
+            {
+                using (var frame = new Mat())
                 {
-                    using (var frame = new Mat())
+                    while (!_cancellationTokenSource.IsCancellationRequested)
                     {
-                        while (!_cancellationTokenSource.IsCancellationRequested)
+                        _videoCapture.Read(frame);
+
+                        if (!frame.Empty())
                         {
-                            _videoCapture.Read(frame);
+                            _lastFrame = BitmapConverter.ToBitmap(frame);
+                            var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
+                            lastFrameBitmapImage.Freeze();
 
-                            if (!frame.Empty())
-                            {
-                                _lastFrame = BitmapConverter.ToBitmap(frame);
-                                var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
-                                lastFrameBitmapImage.Freeze();
-
-                                _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
-                                await Task.Delay(10);
-                            }
+                            _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
+                            await Task.Delay(10);
                         }
                     }
-                }, _cancellationTokenSource.Token);
+                }
+            }, _cancellationTokenSource.Token);
 
             if (_previewTask.IsFaulted)
                 throw _previewTask.Exception;
