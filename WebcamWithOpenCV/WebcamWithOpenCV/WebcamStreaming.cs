@@ -75,20 +75,6 @@ namespace WebcamWithOpenCV
                     }
                 }, _cancellationTokenSource.Token);
 
-            //// To wait for VideoCapture initialization
-            //const int maxTentatives = 10;
-            //for (int i = 0; i < maxTentatives; ++i)
-            //{
-            //    if (_videoCapture != null && _videoCapture.IsOpened())
-            //    {
-            //        return;
-            //    }
-            //    else
-            //    {
-            //        await Task.Delay(1000);
-            //    }
-            //}
-
             if (_previewTask.IsFaulted)
                 throw _previewTask.Exception;
         }
