@@ -4,7 +4,6 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -22,16 +21,19 @@ namespace WebcamWithOpenCV
         private readonly int _frameWidth;
         private readonly int _frameHeight;
 
+        public int CameraDeviceId { get; private set; }
         public byte[] LastPngFrame { get; private set; }
 
         public WebcamStreaming(
             Image imageControlForRendering,
             int frameWidth,
-            int frameHeight)
+            int frameHeight,
+            int cameraDeviceId)
         {
             _imageControlForRendering = imageControlForRendering;
             _frameWidth = frameWidth;
             _frameHeight = frameHeight;
+            CameraDeviceId = cameraDeviceId;
         }
 
         public async Task Start()
@@ -47,8 +49,8 @@ namespace WebcamWithOpenCV
                 // Async to have the possibility to show an animated loader without freezing the GUI
                 await Task.Run(() =>
                 {
-                    _videoCapture = new VideoCapture(0);
-                    if (!_videoCapture.Open(0))
+                    _videoCapture = new VideoCapture(CameraDeviceId);
+                    if (!_videoCapture.Open(CameraDeviceId))
                     {
                         throw new ApplicationException("Cannot connect to the Webcam");
                     }
