@@ -72,10 +72,11 @@ namespace WebcamWithOpenCV
                             _lastFrame = BitmapConverter.ToBitmap(frame);
                             var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                             lastFrameBitmapImage.Freeze();
-
                             _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
-                            await Task.Delay(10);
                         }
+
+                        // 30 FPS
+                        await Task.Delay(33);
                     }
                 }
             }, _cancellationTokenSource.Token);

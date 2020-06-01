@@ -78,6 +78,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BitmapExtensions.cs" />
     <Compile Include="CameraDevicesEnumerator.cs" />
     <Compile Include="WebcamStreaming.cs" />
     <Page Include="MainWindow.xaml">
