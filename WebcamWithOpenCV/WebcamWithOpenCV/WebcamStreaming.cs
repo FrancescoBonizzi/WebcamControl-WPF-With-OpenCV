@@ -5,6 +5,7 @@ using OpenCvSharp.Extensions;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -47,41 +48,49 @@ namespace WebcamWithOpenCV
             _cancellationTokenSource = new CancellationTokenSource();
             _previewTask = Task.Run(async () =>
             {
-                // Creation and disposal of this object should be done in the same thread 
-                // because if not it throws disconnectedContext exception
-                var videoCapture = new VideoCapture();
-
-                if (!videoCapture.Open(CameraDeviceId))
+                try
                 {
-                    throw new ApplicationException("Cannot connect to camera");
-                }
+                    // Creation and disposal of this object should be done in the same thread 
+                    // because if not it throws disconnectedContext exception
+                    var videoCapture = new VideoCapture();
 
-                videoCapture.FrameWidth = _frameWidth;
-                videoCapture.FrameHeight = _frameHeight;
-
-                using (var frame = new Mat())
-                {
-                    while (!_cancellationTokenSource.IsCancellationRequested)
+                    if (!videoCapture.Open(CameraDeviceId))
                     {
-                        videoCapture.Read(frame);
-
-                        if (!frame.Empty())
-                        {
-                            // Releases the lock on first not empty frame
-                            if (initializationSemaphore != null)
-                                initializationSemaphore.Release();
-                            _lastFrame = BitmapConverter.ToBitmap(frame);
-                            var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
-                            lastFrameBitmapImage.Freeze();
-                            _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
-                        }
-
-                        // 30 FPS
-                        await Task.Delay(33);
+                        throw new ApplicationException("Cannot connect to camera");
                     }
-                }
 
-                videoCapture?.Dispose();
+                    videoCapture.FrameWidth = _frameWidth;
+                    videoCapture.FrameHeight = _frameHeight;
+
+                    using (var frame = new Mat())
+                    {
+                        while (!_cancellationTokenSource.IsCancellationRequested)
+                        {
+                            videoCapture.Read(frame);
+
+                            if (!frame.Empty())
+                            {
+                                // Releases the lock on first not empty frame
+                                if (initializationSemaphore != null)
+                                    initializationSemaphore.Release();
+                                _lastFrame = BitmapConverter.ToBitmap(frame);
+                                var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
+                                lastFrameBitmapImage.Freeze();
+                                _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
+                            }
+
+                            // 30 FPS
+                            await Task.Delay(33);
+                        }
+                    }
+
+                    videoCapture?.Dispose();
+                }
+                finally
+                {
+                    if (initializationSemaphore != null)
+                        initializationSemaphore.Release();
+                }
 
             }, _cancellationTokenSource.Token);
 
@@ -92,7 +101,10 @@ namespace WebcamWithOpenCV
             initializationSemaphore = null;
 
             if (_previewTask.IsFaulted)
-                throw _previewTask.Exception;
+            {
+                // To let the exceptions exit
+                await _previewTask;
+            }
         }
 
         public async Task Stop()
@@ -101,10 +113,13 @@ namespace WebcamWithOpenCV
             if (_cancellationTokenSource.IsCancellationRequested)
                 return;
 
-            _cancellationTokenSource.Cancel();
+            if (!_previewTask.IsCompleted)
+            {
+                _cancellationTokenSource.Cancel();
 
-            // Wait for it, to avoid conflicts with read/write of _lastFrame
-            await _previewTask;
+                // Wait for it, to avoid conflicts with read/write of _lastFrame
+                await _previewTask;
+            }
 
             if (_lastFrame != null)
             {

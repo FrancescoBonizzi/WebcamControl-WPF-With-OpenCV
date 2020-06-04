@@ -21,7 +21,7 @@ namespace WebcamWithOpenCV
         {
             cameraLoading.Visibility = Visibility.Visible;
             webcamContainer.Visibility = Visibility.Collapsed;
-            btnStop.IsEnabled = true;
+            btnStop.IsEnabled = false;
             btnStart.IsEnabled = false;
 
             var selectedCameraDeviceId = cmbCameraDevices.SelectedIndex;
@@ -38,10 +38,14 @@ namespace WebcamWithOpenCV
             try
             {
                 await _webcamStreaming.Start();
+                btnStop.IsEnabled = true;
+                btnStart.IsEnabled = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                btnStop.IsEnabled = false;
+                btnStart.IsEnabled = true;
             }
 
             cameraLoading.Visibility = Visibility.Collapsed;
@@ -50,12 +54,19 @@ namespace WebcamWithOpenCV
 
         private async void btnStop_Click(object sender, RoutedEventArgs e)
         {
-            await _webcamStreaming.Stop();
-            btnStop.IsEnabled = false;
-            btnStart.IsEnabled = true;
+            try
+            {
+                await _webcamStreaming.Stop();
+                btnStop.IsEnabled = false;
+                btnStart.IsEnabled = true;
 
-            // To save the screenshot
-            // var screenshot = _webcamStreaming.LastPngFrame;
+                // To save the screenshot
+                // var screenshot = _webcamStreaming.LastPngFrame;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public void Dispose()
