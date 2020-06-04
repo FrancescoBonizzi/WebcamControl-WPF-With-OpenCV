@@ -42,7 +42,7 @@ namespace WebcamWithOpenCV
             if (_previewTask != null && !_previewTask.IsCompleted)
                 return;
 
-            bool firstNonEmptyFrameReceived = false;
+            var initializationSemaphore = new SemaphoreSlim(0, 1);
 
             _cancellationTokenSource = new CancellationTokenSource();
             _previewTask = Task.Run(async () =>
@@ -67,7 +67,9 @@ namespace WebcamWithOpenCV
 
                         if (!frame.Empty())
                         {
-                            firstNonEmptyFrameReceived = true;
+                            // Releases the lock on first not empty frame
+                            if (initializationSemaphore != null)
+                                initializationSemaphore.Release();
                             _lastFrame = BitmapConverter.ToBitmap(frame);
                             var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                             lastFrameBitmapImage.Freeze();
@@ -84,10 +86,10 @@ namespace WebcamWithOpenCV
             }, _cancellationTokenSource.Token);
 
             // Async initialization to have the possibility to show an animated loader without freezing the GUI
-            while (!firstNonEmptyFrameReceived && !_previewTask.IsFaulted)
-            {
-                await Task.Delay(500);
-            }
+            // The alternative was the long polling. (while !variable) await Task.Delay
+            await initializationSemaphore.WaitAsync();
+            initializationSemaphore.Dispose();
+            initializationSemaphore = null;
 
             if (_previewTask.IsFaulted)
                 throw _previewTask.Exception;
