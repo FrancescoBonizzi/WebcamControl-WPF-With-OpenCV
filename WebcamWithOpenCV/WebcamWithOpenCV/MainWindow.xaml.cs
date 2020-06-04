@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Media3D;
 
@@ -34,7 +35,14 @@ namespace WebcamWithOpenCV
                     cameraDeviceId: cmbCameraDevices.SelectedIndex);
             }
 
-            await _webcamStreaming.Start();
+            try
+            {
+                await _webcamStreaming.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
             cameraLoading.Visibility = Visibility.Collapsed;
             webcamContainer.Visibility = Visibility.Visible;

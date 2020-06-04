@@ -64,7 +64,7 @@ namespace WebcamWithOpenCV
                     while (!_cancellationTokenSource.IsCancellationRequested)
                     {
                         videoCapture.Read(frame);
-             
+
                         if (!frame.Empty())
                         {
                             firstNonEmptyFrameReceived = true;
