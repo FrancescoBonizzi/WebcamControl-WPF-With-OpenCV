@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Media3D;
 
 namespace WebcamWithOpenCV
 {
@@ -11,10 +13,16 @@ namespace WebcamWithOpenCV
             InitializeComponent();
             cmbCameraDevices.ItemsSource = CameraDevicesEnumerator.GetAllConnectedCameras();
             cmbCameraDevices.SelectedIndex = 0;
+            cameraLoading.Visibility = Visibility.Collapsed;
         }
 
         private async void btnStart_Click(object sender, RoutedEventArgs e)
         {
+            cameraLoading.Visibility = Visibility.Visible;
+            webcamContainer.Visibility = Visibility.Collapsed;
+            btnStop.IsEnabled = true;
+            btnStart.IsEnabled = false;
+
             var selectedCameraDeviceId = cmbCameraDevices.SelectedIndex;
             if (_webcamStreaming == null || _webcamStreaming.CameraDeviceId != selectedCameraDeviceId)
             {
@@ -27,8 +35,9 @@ namespace WebcamWithOpenCV
             }
 
             await _webcamStreaming.Start();
-            btnStop.IsEnabled = true;
-            btnStart.IsEnabled = false;
+
+            cameraLoading.Visibility = Visibility.Collapsed;
+            webcamContainer.Visibility = Visibility.Visible;
         }
 
         private async void btnStop_Click(object sender, RoutedEventArgs e)
@@ -38,7 +47,7 @@ namespace WebcamWithOpenCV
             btnStart.IsEnabled = true;
 
             // To save the screenshot
-            // var screnshot = _webcamStreaming.LastPngFrame;
+            // var screenshot = _webcamStreaming.LastPngFrame;
         }
 
         public void Dispose()

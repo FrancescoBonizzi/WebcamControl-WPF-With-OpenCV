@@ -3,6 +3,7 @@ using ImageProcessor.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ namespace WebcamWithOpenCV
         private Task _previewTask;
 
         private CancellationTokenSource _cancellationTokenSource;
-        private VideoCapture _videoCapture;
         private readonly Image _imageControlForRendering;
         private readonly int _frameWidth;
         private readonly int _frameHeight;
@@ -42,33 +42,32 @@ namespace WebcamWithOpenCV
             if (_previewTask != null && !_previewTask.IsCompleted)
                 return;
 
+            bool firstNonEmptyFrameReceived = false;
+
             _cancellationTokenSource = new CancellationTokenSource();
-
-            if (_videoCapture == null)
-            {
-                // Async to have the possibility to show an animated loader without freezing the GUI
-                await Task.Run(() =>
-                {
-                    _videoCapture = new VideoCapture(CameraDeviceId);
-                    if (!_videoCapture.Open(CameraDeviceId))
-                    {
-                        throw new ApplicationException("Cannot connect to the Webcam");
-                    }
-                    _videoCapture.FrameWidth = _frameWidth;
-                    _videoCapture.FrameHeight = _frameHeight;
-                });
-            }
-
             _previewTask = Task.Run(async () =>
             {
+                // Creation and disposal of this object should be done in the same thread 
+                // because if not it throws disconnectedContext exception
+                var videoCapture = new VideoCapture();
+
+                if (!videoCapture.Open(CameraDeviceId))
+                {
+                    throw new ApplicationException("Cannot connect to camera");
+                }
+
+                videoCapture.FrameWidth = _frameWidth;
+                videoCapture.FrameHeight = _frameHeight;
+
                 using (var frame = new Mat())
                 {
                     while (!_cancellationTokenSource.IsCancellationRequested)
                     {
-                        _videoCapture.Read(frame);
-
+                        videoCapture.Read(frame);
+             
                         if (!frame.Empty())
                         {
+                            firstNonEmptyFrameReceived = true;
                             _lastFrame = BitmapConverter.ToBitmap(frame);
                             var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                             lastFrameBitmapImage.Freeze();
@@ -79,7 +78,16 @@ namespace WebcamWithOpenCV
                         await Task.Delay(33);
                     }
                 }
+
+                videoCapture?.Dispose();
+
             }, _cancellationTokenSource.Token);
+
+            // Async initialization to have the possibility to show an animated loader without freezing the GUI
+            while (!firstNonEmptyFrameReceived && !_previewTask.IsFaulted)
+            {
+                await Task.Delay(500);
+            }
 
             if (_previewTask.IsFaulted)
                 throw _previewTask.Exception;
@@ -120,12 +128,8 @@ namespace WebcamWithOpenCV
         public void Dispose()
         {
             _cancellationTokenSource?.Cancel();
-            if (_videoCapture?.IsDisposed == false)
-            {
-                _videoCapture?.Dispose();
-                _videoCapture = null;
-            }
             _lastFrame?.Dispose();
         }
+
     }
 }
