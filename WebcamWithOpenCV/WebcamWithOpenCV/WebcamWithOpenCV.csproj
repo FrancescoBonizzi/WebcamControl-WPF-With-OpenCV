@@ -79,6 +79,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BitmapExtensions.cs" />
+    <Compile Include="CameraDevice.cs" />
     <Compile Include="CameraDevicesEnumerator.cs" />
     <Compile Include="WebcamStreaming.cs" />
     <Page Include="MainWindow.xaml">

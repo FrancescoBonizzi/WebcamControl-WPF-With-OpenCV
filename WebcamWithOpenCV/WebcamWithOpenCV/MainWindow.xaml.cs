@@ -22,7 +22,7 @@ namespace WebcamWithOpenCV
             btnStop.IsEnabled = false;
             btnStart.IsEnabled = false;
 
-            var selectedCameraDeviceId = cmbCameraDevices.SelectedIndex;
+            var selectedCameraDeviceId = (cmbCameraDevices.SelectedItem as CameraDevice).OpenCvId;
             if (_webcamStreaming == null || _webcamStreaming.CameraDeviceId != selectedCameraDeviceId)
             {
                 _webcamStreaming?.Dispose();

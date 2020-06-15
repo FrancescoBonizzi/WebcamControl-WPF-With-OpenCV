@@ -57,9 +57,6 @@ namespace WebcamWithOpenCV
                         throw new ApplicationException("Cannot connect to camera");
                     }
 
-                    videoCapture.FrameWidth = _frameWidth;
-                    videoCapture.FrameHeight = _frameHeight;
-
                     using (var frame = new Mat())
                     {
                         while (!_cancellationTokenSource.IsCancellationRequested)

@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="OpenCV in WPF"
     Width="800"
-    Height="450"
+    Height="550"
     Closing="Window_Closing"
     mc:Ignorable="d">
 
@@ -29,8 +29,37 @@
                 Text="Device: " />
             <ComboBox
                 x:Name="cmbCameraDevices"
-                Width="200"
-                VerticalAlignment="Center" />
+                Width="450"
+                VerticalAlignment="Center">
+
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Name:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="OpenCvId:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding OpenCvId}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="DeviceId:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding DeviceId}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="PNPClass:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding PNPClass}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Status:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Status}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                
+            </ComboBox>
         </StackPanel>
 
         <StackPanel
