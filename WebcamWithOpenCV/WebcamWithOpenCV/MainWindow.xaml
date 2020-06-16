@@ -47,14 +47,6 @@
                                 <TextBlock Text="DeviceId:" Width="80" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding DeviceId}" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="PNPClass:" Width="80" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding PNPClass}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Status:" Width="80" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Status}" />
-                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

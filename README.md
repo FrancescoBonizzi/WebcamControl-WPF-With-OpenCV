@@ -1,8 +1,10 @@
 # WebcamControl-WPF-With-OpenCV
 A simple webcam control for WPF based on OpenCVSharp
 
-The goal of this "control" is to simplify the webcam streaming on WPF.
+The goal of this "control" is to simplify the webcam streaming on WPF and be open to post processing like recognizing faces!
 
 # ![Screenshot](images/screen.png)
 
-**BUT**, I'm not happy with it. It uses a lot of CPU while the methods based just on DirectX are blazing fast.
+## Notes
+Cameras enumeration has been a pain in the ass.
+With `OpenCv` you cannot connect to a camera by name, you have to use an index. The index in `OpenCv` is based on **the connection order to the computer**. Neither `WMI` gives you that information, so I had to reference `DirectShow(Lib)` which, luckly, does the same as `OpenCv`. (As far as I know!)
