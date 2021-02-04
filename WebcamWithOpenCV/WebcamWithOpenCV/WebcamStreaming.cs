@@ -12,7 +12,7 @@ namespace WebcamWithOpenCV
 {
     public sealed class WebcamStreaming : IDisposable
     {
-        private System.Drawing.Bitmap _lastFrame;
+        public System.Drawing.Bitmap LastFrame { get; private set; }
         private Task _previewTask;
 
         private CancellationTokenSource _cancellationTokenSource;
@@ -68,8 +68,8 @@ namespace WebcamWithOpenCV
                                 // Releases the lock on first not empty frame
                                 if (initializationSemaphore != null)
                                     initializationSemaphore.Release();
-                                _lastFrame = BitmapConverter.ToBitmap(frame);
-                                var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
+                                LastFrame = BitmapConverter.ToBitmap(frame);
+                                var lastFrameBitmapImage = LastFrame.ToBitmapSource();
                                 lastFrameBitmapImage.Freeze();
                                 _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
                             }
@@ -116,13 +116,13 @@ namespace WebcamWithOpenCV
                 await _previewTask;
             }
 
-            if (_lastFrame != null)
+            if (LastFrame != null)
             {
                 using (var imageFactory = new ImageFactory())
                 using (var stream = new MemoryStream())
                 {
                     imageFactory
-                        .Load(_lastFrame)
+                        .Load(LastFrame)
                         .Resize(new ResizeLayer(
                             size: new System.Drawing.Size(_frameWidth, _frameHeight),
                             resizeMode: ResizeMode.Crop,
@@ -140,7 +140,7 @@ namespace WebcamWithOpenCV
         public void Dispose()
         {
             _cancellationTokenSource?.Cancel();
-            _lastFrame?.Dispose();
+            LastFrame?.Dispose();
         }
 
     }

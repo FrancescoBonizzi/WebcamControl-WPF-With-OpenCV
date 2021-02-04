@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows;
+using System.Windows.Threading;
+using ZXing;
 
 namespace WebcamWithOpenCV
 {
     public partial class MainWindow : Window
     {
         private WebcamStreaming _webcamStreaming;
+        private DispatcherTimer _dispatcherTimer;
 
         public MainWindow()
         {
@@ -33,9 +37,19 @@ namespace WebcamWithOpenCV
                     cameraDeviceId: cmbCameraDevices.SelectedIndex);
             }
 
+            if (_dispatcherTimer == null)
+            {
+                _dispatcherTimer = new DispatcherTimer();
+                _dispatcherTimer.Tick += _dispatcherTimer_Tick;
+                _dispatcherTimer.Interval = TimeSpan.FromSeconds(1);
+            }
+
+            _dispatcherTimer.Stop();
+
             try
             {
                 await _webcamStreaming.Start();
+                _dispatcherTimer.Start();
                 btnStop.IsEnabled = true;
                 btnStart.IsEnabled = false;
             }
@@ -48,6 +62,20 @@ namespace WebcamWithOpenCV
 
             cameraLoading.Visibility = Visibility.Collapsed;
             webcamContainer.Visibility = Visibility.Visible;
+        }
+
+        private void _dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                var barcodeReader = new BarcodeReader();
+                var result = barcodeReader.Decode(_webcamStreaming.LastFrame);
+                txtQRCodeContent.Text = result?.Text ?? "No qr code found";
+            }
+            catch (Exception ex)
+            {
+                txtQRCodeContent.Text = ex.Message;
+            }
         }
 
         private async void btnStop_Click(object sender, RoutedEventArgs e)

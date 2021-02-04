@@ -17,6 +17,7 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
         <StackPanel
@@ -82,8 +83,10 @@
             <Image x:Name="webcamPreview" Grid.Row="0" />
         </Border>
 
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" x:Name="txtQRCodeContent" TextWrapping="Wrap" />
+
         <StackPanel
-            Grid.Row="2"
+            Grid.Row="3"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
             <Button
