@@ -18,6 +18,8 @@ namespace WebcamWithOpenCV
 
         private async void btnStart_Click(object sender, RoutedEventArgs e)
         {
+            chkQRCode.IsChecked = false;
+            chkQRCode.IsEnabled = true;
             cameraLoading.Visibility = Visibility.Visible;
             webcamContainer.Visibility = Visibility.Collapsed;
             btnStop.IsEnabled = false;
@@ -53,6 +55,9 @@ namespace WebcamWithOpenCV
 
         private async void btnStop_Click(object sender, RoutedEventArgs e)
         {
+            chkQRCode.IsChecked = false;
+            chkQRCode.IsEnabled = false; 
+
             try
             {
                 await _webcamStreaming.Stop();
@@ -75,29 +80,53 @@ namespace WebcamWithOpenCV
 
         private void chkQRCode_Checked(object sender, RoutedEventArgs e)
         {
-            _webcamStreaming.OnQRCodeRead += _webcamStreaming_OnQRCodeRead;
+            if (_webcamStreaming != null)
+            {
+                _webcamStreaming.OnOpenCVQRCodeRead += _webcamStreaming_OnQRCodeRead;
+                _webcamStreaming.OnZXingQRCodeRead += _webcamStreaming_OnZXingQRCodeRead;
+            }
         }
 
-        private void _webcamStreaming_OnQRCodeRead(object sender, EventArgs e)
+        private void _webcamStreaming_OnZXingQRCodeRead(object sender, EventArgs e)
         {
-            txtQRCodeData.Dispatcher.Invoke(() =>
+            txtOpenZxingQRCodeData.Dispatcher.Invoke(() =>
             {
                 var qrCodeData = (e as QRCodeReadEventArgs).QRCodeData;
                 if (!string.IsNullOrWhiteSpace(qrCodeData))
                 {
-                    txtQRCodeData.Text = qrCodeData;
-                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
+                    txtOpenZxingQRCodeData.Text = "Zxing: " + qrCodeData.SafeSubstring(0, 10) + "...";
+                    txtOpenZxingQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
                 }
                 else
                 {
-                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
+                    txtOpenZxingQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
+                }
+            });
+        }
+
+        private void _webcamStreaming_OnQRCodeRead(object sender, EventArgs e)
+        {
+            txtOpenCVQRCodeData.Dispatcher.Invoke(() =>
+            {
+                var qrCodeData = (e as QRCodeReadEventArgs).QRCodeData;
+                if (!string.IsNullOrWhiteSpace(qrCodeData))
+                {
+                    txtOpenCVQRCodeData.Text = "OpenCV: " + qrCodeData.SafeSubstring(0, 10) + "...";
+                    txtOpenCVQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
+                }
+                else
+                {
+                    txtOpenCVQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
                 }
             });
         }
 
         private void chkQRCode_Unchecked(object sender, RoutedEventArgs e)
         {
-            _webcamStreaming.OnQRCodeRead -= _webcamStreaming_OnQRCodeRead;
+            if (_webcamStreaming != null)
+            {
+                _webcamStreaming.OnOpenCVQRCodeRead -= _webcamStreaming_OnQRCodeRead;
+            }
         }
     }
 }

@@ -96,7 +96,15 @@
             </Border>
 
             <TextBlock
-                x:Name="txtQRCodeData"
+                x:Name="txtOpenCVQRCodeData"
+                Margin="5"
+                FontSize="14"
+                FontWeight="Bold"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="txtOpenZxingQRCodeData"
+                Margin="5"
                 FontSize="14"
                 FontWeight="Bold"
                 TextAlignment="Center"
@@ -111,11 +119,12 @@
 
             <CheckBox
                 x:Name="chkQRCode"
+                IsEnabled="False"
                 Margin="10,0"
-                Checked="chkQRCode_Checked"
-                Unchecked="chkQRCode_Unchecked"
                 VerticalAlignment="Center"
-                Content="Enable QRCode read" />
+                Checked="chkQRCode_Checked"
+                Content="Enable QRCode read"
+                Unchecked="chkQRCode_Unchecked" />
 
             <Button
                 x:Name="btnStart"

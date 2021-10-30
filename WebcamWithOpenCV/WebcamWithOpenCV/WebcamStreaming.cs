@@ -3,13 +3,14 @@ using ImageProcessor.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Threading;
+using ZXing;
 
 namespace WebcamWithOpenCV
 {
@@ -27,7 +28,8 @@ namespace WebcamWithOpenCV
         public int CameraDeviceId { get; private set; }
         public byte[] LastPngFrame { get; private set; }
 
-        public event EventHandler OnQRCodeRead;
+        public event EventHandler OnOpenCVQRCodeRead;
+        public event EventHandler OnZXingQRCodeRead;
 
         public WebcamStreaming(
             Image imageControlForRendering,
@@ -72,16 +74,17 @@ namespace WebcamWithOpenCV
 
                             if (!frame.Empty())
                             {
-                                if (OnQRCodeRead != null)
+                                if (OnOpenCVQRCodeRead != null)
                                 {
                                     try
                                     {
+                                        // Could be interesting to improve reading
+                                        // https://stackoverflow.com/questions/63195577/how-to-locate-qr-code-in-large-image-to-improve-decoding-performance
                                         string qrCodeData = _qrCodeDetector.DetectAndDecode(frame, out var points);
-                                        OnQRCodeRead.Invoke(
+                                        OnOpenCVQRCodeRead.Invoke(
                                             this,
                                             new QRCodeReadEventArgs(qrCodeData));
 
-                                        
                                         for (int i = 0; i < points.Length; i++)
                                         {
                                             var point1 = points[i];
@@ -99,6 +102,27 @@ namespace WebcamWithOpenCV
                                 if (initializationSemaphore != null)
                                     initializationSemaphore.Release();
                                 _lastFrame = BitmapConverter.ToBitmap(frame);
+
+
+                                if (OnZXingQRCodeRead != null)
+                                {
+                                    try
+                                    {
+                                        var reader = new BarcodeReader();
+                                        reader.AutoRotate = true;
+                                        reader.TryInverted = true;
+                                        reader.Options.TryHarder = true;
+                                        // detect and decode the barcode inside the bitmap
+                                        var result = reader.Decode(_lastFrame);
+                                        // do something with the result
+                                        OnZXingQRCodeRead.Invoke(null, new QRCodeReadEventArgs(result?.Text ?? string.Empty));
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine(ex);
+                                    }
+                                }
+
                                 var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                                 lastFrameBitmapImage.Freeze();
                                 _imageControlForRendering.Dispatcher.Invoke(
