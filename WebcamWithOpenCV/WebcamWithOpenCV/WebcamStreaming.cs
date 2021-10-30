@@ -3,10 +3,12 @@ using ImageProcessor.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace WebcamWithOpenCV
 {
@@ -19,9 +21,12 @@ namespace WebcamWithOpenCV
         private readonly Image _imageControlForRendering;
         private readonly int _frameWidth;
         private readonly int _frameHeight;
+        private readonly QRCodeDetector _qrCodeDetector;
 
         public int CameraDeviceId { get; private set; }
         public byte[] LastPngFrame { get; private set; }
+
+        public event EventHandler OnQRCodeRead;
 
         public WebcamStreaming(
             Image imageControlForRendering,
@@ -33,6 +38,7 @@ namespace WebcamWithOpenCV
             _frameWidth = frameWidth;
             _frameHeight = frameHeight;
             CameraDeviceId = cameraDeviceId;
+            _qrCodeDetector = new QRCodeDetector();
         }
 
         public async Task Start()
@@ -71,7 +77,16 @@ namespace WebcamWithOpenCV
                                 _lastFrame = BitmapConverter.ToBitmap(frame);
                                 var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                                 lastFrameBitmapImage.Freeze();
-                                _imageControlForRendering.Dispatcher.Invoke(() => _imageControlForRendering.Source = lastFrameBitmapImage);
+                                _imageControlForRendering.Dispatcher.Invoke(
+                                    () => _imageControlForRendering.Source = lastFrameBitmapImage);
+
+                                if (OnQRCodeRead != null)
+                                {
+                                    var data = _qrCodeDetector.DetectAndDecode(frame, out var points);
+                                    OnQRCodeRead.Invoke(
+                                        this,
+                                        new QRCodeReadEventArgs(data));
+                                }
                             }
 
                             // 30 FPS

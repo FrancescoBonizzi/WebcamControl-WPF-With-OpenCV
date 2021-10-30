@@ -63,6 +63,7 @@
     <Compile Include="BitmapExtensions.cs" />
     <Compile Include="CameraDevice.cs" />
     <Compile Include="CameraDevicesEnumerator.cs" />
+    <Compile Include="QRCodeReadEventArgs.cs" />
     <Compile Include="WebcamStreaming.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

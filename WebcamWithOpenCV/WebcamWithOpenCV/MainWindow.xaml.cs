@@ -67,14 +67,31 @@ namespace WebcamWithOpenCV
             }
         }
 
-        public void Dispose()
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _webcamStreaming?.Dispose();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void chkQRCode_Checked(object sender, RoutedEventArgs e)
         {
-            Dispose();
+            _webcamStreaming.OnQRCodeRead += _webcamStreaming_OnQRCodeRead;
+        }
+
+        private void _webcamStreaming_OnQRCodeRead(object sender, EventArgs e)
+        {
+            txtQRCodeData.Dispatcher.Invoke(() =>
+            {
+                var qrCodeData = (e as QRCodeReadEventArgs).QRCodeData;
+                if (!string.IsNullOrWhiteSpace(qrCodeData))
+                {
+                    txtQRCodeData.Text = qrCodeData;
+                }
+            });
+        }
+
+        private void chkQRCode_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _webcamStreaming.OnQRCodeRead -= _webcamStreaming_OnQRCodeRead;
         }
     }
 }

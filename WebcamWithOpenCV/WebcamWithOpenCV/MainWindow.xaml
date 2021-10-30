@@ -36,26 +36,35 @@
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Name:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock
+                                    Width="80"
+                                    FontWeight="SemiBold"
+                                    Text="Name:" />
                                 <TextBlock Text="{Binding Name}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="OpenCvId:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock
+                                    Width="80"
+                                    FontWeight="SemiBold"
+                                    Text="OpenCvId:" />
                                 <TextBlock Text="{Binding OpenCvId}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="DeviceId:" Width="80" FontWeight="SemiBold" />
+                                <TextBlock
+                                    Width="80"
+                                    FontWeight="SemiBold"
+                                    Text="DeviceId:" />
                                 <TextBlock Text="{Binding DeviceId}" />
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
-                
+
             </ComboBox>
         </StackPanel>
 
         <StackPanel
-             x:Name="cameraLoading"
+            x:Name="cameraLoading"
             Grid.Row="1"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
@@ -70,22 +79,44 @@
 
         </StackPanel>
 
-        <Border
+        <StackPanel
             Grid.Row="1"
-            x:Name="webcamContainer"
-            Width="300"
-            Height="300"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            BorderBrush="Black"
-            BorderThickness="2">
-            <Image x:Name="webcamPreview" Grid.Row="0" />
-        </Border>
+            Orientation="Vertical">
+            <Border
+                x:Name="webcamContainer"
+                Width="300"
+                Height="300"
+                BorderBrush="Black"
+                BorderThickness="2">
+
+                <Image x:Name="webcamPreview" />
+
+            </Border>
+
+            <TextBlock
+                x:Name="txtQRCodeData"
+                FontSize="14"
+                FontWeight="Bold"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
 
         <StackPanel
             Grid.Row="2"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
+
+            <CheckBox
+                x:Name="chkQRCode"
+                Margin="10,0"
+                Checked="chkQRCode_Checked"
+                Unchecked="chkQRCode_Unchecked"
+                VerticalAlignment="Center"
+                Content="Enable QRCode read" />
+
             <Button
                 x:Name="btnStart"
                 Width="100"
