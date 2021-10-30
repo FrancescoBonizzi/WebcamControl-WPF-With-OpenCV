@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media;
 
 namespace WebcamWithOpenCV
 {
@@ -85,6 +86,11 @@ namespace WebcamWithOpenCV
                 if (!string.IsNullOrWhiteSpace(qrCodeData))
                 {
                     txtQRCodeData.Text = qrCodeData;
+                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
+                }
+                else
+                {
+                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
                 }
             });
         }

@@ -81,6 +81,7 @@ namespace WebcamWithOpenCV
                                             this,
                                             new QRCodeReadEventArgs(qrCodeData));
 
+                                        
                                         for (int i = 0; i < points.Length; i++)
                                         {
                                             var point1 = points[i];
@@ -171,6 +172,7 @@ namespace WebcamWithOpenCV
         {
             _cancellationTokenSource?.Cancel();
             _lastFrame?.Dispose();
+            _qrCodeDetector?.Dispose();
         }
 
     }
