@@ -4,6 +4,7 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,6 +72,28 @@ namespace WebcamWithOpenCV
 
                             if (!frame.Empty())
                             {
+                                if (OnQRCodeRead != null)
+                                {
+                                    try
+                                    {
+                                        string qrCodeData = _qrCodeDetector.DetectAndDecode(frame, out var points);
+                                        OnQRCodeRead.Invoke(
+                                            this,
+                                            new QRCodeReadEventArgs(qrCodeData));
+
+                                        for (int i = 0; i < points.Length; i++)
+                                        {
+                                            var point1 = points[i];
+                                            var point2 = points[(i + 1) % 4];
+                                            Cv2.Line(frame, (int)point1.X, (int)point1.Y, (int)point2.X, (int)point2.Y, Scalar.Green, 3);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine(ex);
+                                    }
+                                }
+
                                 // Releases the lock on first not empty frame
                                 if (initializationSemaphore != null)
                                     initializationSemaphore.Release();
@@ -79,14 +102,6 @@ namespace WebcamWithOpenCV
                                 lastFrameBitmapImage.Freeze();
                                 _imageControlForRendering.Dispatcher.Invoke(
                                     () => _imageControlForRendering.Source = lastFrameBitmapImage);
-
-                                if (OnQRCodeRead != null)
-                                {
-                                    var data = _qrCodeDetector.DetectAndDecode(frame, out var points);
-                                    OnQRCodeRead.Invoke(
-                                        this,
-                                        new QRCodeReadEventArgs(data));
-                                }
                             }
 
                             // 30 FPS
