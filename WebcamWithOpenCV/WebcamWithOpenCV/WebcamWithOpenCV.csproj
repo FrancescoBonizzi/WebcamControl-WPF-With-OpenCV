@@ -63,6 +63,7 @@
     <Compile Include="BitmapExtensions.cs" />
     <Compile Include="CameraDevice.cs" />
     <Compile Include="CameraDevicesEnumerator.cs" />
+    <Compile Include="OpenCVQRCodeReader.cs" />
     <Compile Include="QRCodeReadEventArgs.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="WebcamStreaming.cs" />
