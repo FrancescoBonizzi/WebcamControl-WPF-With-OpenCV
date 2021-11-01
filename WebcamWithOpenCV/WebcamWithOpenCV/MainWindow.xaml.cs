@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace WebcamWithOpenCV
@@ -82,41 +83,24 @@ namespace WebcamWithOpenCV
         {
             if (_webcamStreaming != null)
             {
-                _webcamStreaming.OnOpenCVQRCodeRead += _webcamStreaming_OnQRCodeRead;
-                _webcamStreaming.OnZXingQRCodeRead += _webcamStreaming_OnZXingQRCodeRead;
+                _webcamStreaming.OnQRCodeRead += _webcamStreaming_OnQRCodeRead;
             }
-        }
-
-        private void _webcamStreaming_OnZXingQRCodeRead(object sender, EventArgs e)
-        {
-            txtOpenZxingQRCodeData.Dispatcher.Invoke(() =>
-            {
-                var qrCodeData = (e as QRCodeReadEventArgs).QRCodeData;
-                if (!string.IsNullOrWhiteSpace(qrCodeData))
-                {
-                    txtOpenZxingQRCodeData.Text = "Zxing: " + qrCodeData.SafeSubstring(0, 10) + "...";
-                    txtOpenZxingQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
-                }
-                else
-                {
-                    txtOpenZxingQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
-                }
-            });
         }
 
         private void _webcamStreaming_OnQRCodeRead(object sender, EventArgs e)
         {
-            txtOpenCVQRCodeData.Dispatcher.Invoke(() =>
+            txtQRCodeData.Dispatcher.Invoke(() =>
             {
                 var qrCodeData = (e as QRCodeReadEventArgs).QRCodeData;
                 if (!string.IsNullOrWhiteSpace(qrCodeData))
                 {
-                    txtOpenCVQRCodeData.Text = "OpenCV: " + qrCodeData.SafeSubstring(0, 10) + "...";
-                    txtOpenCVQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
+                    txtQRCodeData.Document.Blocks.Clear();
+                    txtQRCodeData.Document.Blocks.Add(new Paragraph(new Run(qrCodeData)));
+                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Green);
                 }
                 else
                 {
-                    txtOpenCVQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
+                    txtQRCodeData.Foreground = new SolidColorBrush(Colors.Red);
                 }
             });
         }
@@ -125,8 +109,13 @@ namespace WebcamWithOpenCV
         {
             if (_webcamStreaming != null)
             {
-                _webcamStreaming.OnOpenCVQRCodeRead -= _webcamStreaming_OnQRCodeRead;
+                _webcamStreaming.OnQRCodeRead -= _webcamStreaming_OnQRCodeRead;
             }
+        }
+
+        private void btnClearQRCodeOutput_Click(object sender, RoutedEventArgs e)
+        {
+            txtQRCodeData.Document.Blocks.Clear();
         }
     }
 }

@@ -63,29 +63,37 @@
             </ComboBox>
         </StackPanel>
 
-        <StackPanel
-            x:Name="cameraLoading"
+        <Grid
             Grid.Row="1"
             HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Vertical">
+            VerticalAlignment="Center">
 
-            <ProgressBar
-                Width="100"
-                Height="15"
-                IsIndeterminate="True" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="200" />
+            </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Webcam loading..." />
 
-        </StackPanel>
+            <StackPanel
+                x:Name="cameraLoading"
+                Grid.Row="0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
 
-        <StackPanel
-            Grid.Row="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Vertical">
+                <ProgressBar
+                    Width="100"
+                    Height="15"
+                    IsIndeterminate="True" />
+
+                <TextBlock Text="Webcam loading..." />
+
+            </StackPanel>
+
+
             <Border
                 x:Name="webcamContainer"
+                Grid.Column="0"
                 Width="300"
                 Height="300"
                 BorderBrush="Black"
@@ -95,36 +103,49 @@
 
             </Border>
 
-            <TextBlock
-                x:Name="txtOpenCVQRCodeData"
-                Margin="5"
-                FontSize="14"
-                FontWeight="Bold"
-                TextAlignment="Center"
-                TextWrapping="Wrap" />
-            <TextBlock
-                x:Name="txtOpenZxingQRCodeData"
-                Margin="5"
-                FontSize="14"
-                FontWeight="Bold"
-                TextAlignment="Center"
-                TextWrapping="Wrap" />
-        </StackPanel>
+            <Grid Grid.Column="1">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+
+                <CheckBox
+                    x:Name="chkQRCode"
+                    Grid.Row="0"
+                    Margin="10"
+                    VerticalAlignment="Center"
+                    Checked="chkQRCode_Checked"
+                    Content="Enable QRCode read"
+                    IsEnabled="False"
+                    Unchecked="chkQRCode_Unchecked" />
+
+                <RichTextBox
+                    x:Name="txtQRCodeData"
+                    Grid.Row="1"
+                    Margin="10,0"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    VerticalScrollBarVisibility="Auto" />
+
+                <Button
+                    x:Name="btnClearQRCodeOutput"
+                    Grid.Row="2"
+                    Height="40"
+                    Margin="10"
+                    Click="btnClearQRCodeOutput_Click"
+                    Content="Clear" />
+
+            </Grid>
+
+        </Grid>
 
 
         <StackPanel
             Grid.Row="2"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
-
-            <CheckBox
-                x:Name="chkQRCode"
-                IsEnabled="False"
-                Margin="10,0"
-                VerticalAlignment="Center"
-                Checked="chkQRCode_Checked"
-                Content="Enable QRCode read"
-                Unchecked="chkQRCode_Unchecked" />
 
             <Button
                 x:Name="btnStart"
