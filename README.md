@@ -1,9 +1,10 @@
 # WebcamControl-WPF-With-OpenCV
-A simple webcam control for WPF based on OpenCVSharp
+A simple webcam control for WPF based on OpenCVSharp, now with a **QRCode reader from webcam stream**!
 
 The goal of this "control" is to simplify the webcam streaming on WPF and be open to post processing like recognizing faces!
 
 # ![Screenshot](images/screen.png)
+
 
 ## Notes
 Cameras enumeration has been a pain in the ass.
