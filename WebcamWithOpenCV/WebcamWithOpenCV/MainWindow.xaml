@@ -107,6 +107,7 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
@@ -121,9 +122,19 @@
                     IsEnabled="False"
                     Unchecked="chkQRCode_Unchecked" />
 
+                <CheckBox
+                    x:Name="chkFlip"
+                    Grid.Row="1"
+                    Margin="10"
+                    VerticalAlignment="Center"
+                    Checked="chkFlip_Checked"
+                    Content="Enable flip horizontal"
+                    IsEnabled="False"
+                    Unchecked="chkFlip_Unchecked" />
+
                 <RichTextBox
                     x:Name="txtQRCodeData"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Margin="10,0"
                     FontSize="14"
                     FontWeight="Bold"
@@ -131,7 +142,7 @@
 
                 <Button
                     x:Name="btnClearQRCodeOutput"
-                    Grid.Row="2"
+                    Grid.Row="3"
                     Height="40"
                     Margin="10"
                     Click="btnClearQRCodeOutput_Click"

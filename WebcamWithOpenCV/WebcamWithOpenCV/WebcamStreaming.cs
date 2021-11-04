@@ -23,9 +23,10 @@ namespace WebcamWithOpenCV
 
         public int CameraDeviceId { get; private set; }
         public byte[] LastPngFrame { get; private set; }
+        public bool FlipHorizontally { get; set; }
 
         public event EventHandler OnQRCodeRead;
-        private OpenCVQRCodeReader _qrCodeReader;
+        private readonly OpenCVQRCodeReader _qrCodeReader;
 
         public WebcamStreaming(
             Image imageControlForRendering,
@@ -88,7 +89,10 @@ namespace WebcamWithOpenCV
                                 // Releases the lock on first not empty frame
                                 if (initializationSemaphore != null)
                                     initializationSemaphore.Release();
-                                _lastFrame = BitmapConverter.ToBitmap(frame);
+
+                                _lastFrame = FlipHorizontally 
+                                    ? BitmapConverter.ToBitmap(frame.Flip(FlipMode.Y))
+                                    : BitmapConverter.ToBitmap(frame);
 
                                 var lastFrameBitmapImage = _lastFrame.ToBitmapSource();
                                 lastFrameBitmapImage.Freeze();

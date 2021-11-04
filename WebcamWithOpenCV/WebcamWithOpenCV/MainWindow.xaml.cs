@@ -19,8 +19,8 @@ namespace WebcamWithOpenCV
 
         private async void btnStart_Click(object sender, RoutedEventArgs e)
         {
-            chkQRCode.IsChecked = false;
             chkQRCode.IsEnabled = true;
+            chkFlip.IsEnabled = true;
             cameraLoading.Visibility = Visibility.Visible;
             webcamContainer.Visibility = Visibility.Collapsed;
             btnStop.IsEnabled = false;
@@ -57,7 +57,7 @@ namespace WebcamWithOpenCV
         private async void btnStop_Click(object sender, RoutedEventArgs e)
         {
             chkQRCode.IsChecked = false;
-            chkQRCode.IsEnabled = false; 
+            chkFlip.IsEnabled = false; 
 
             try
             {
@@ -116,6 +116,22 @@ namespace WebcamWithOpenCV
         private void btnClearQRCodeOutput_Click(object sender, RoutedEventArgs e)
         {
             txtQRCodeData.Document.Blocks.Clear();
+        }
+
+        private void chkFlip_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_webcamStreaming != null)
+            {
+                _webcamStreaming.FlipHorizontally = true;
+            }
+        }
+
+        private void chkFlip_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_webcamStreaming != null)
+            {
+                _webcamStreaming.FlipHorizontally = false;
+            }
         }
     }
 }
