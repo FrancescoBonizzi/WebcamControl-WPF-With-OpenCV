@@ -1,6 +1,5 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using System;
 using ZXing;
 using ZXing.Common;
 
@@ -8,16 +7,34 @@ namespace WebcamWithOpenCV
 {
     public class OpenCVQRCodeReader
     {
-        private void RotateImage(Mat src, Mat dst, double angle, double scale)
+        private void RotateImage(Mat source, Mat destination, double angle, double scale)
         {
-            var imageCenter = new Point2f(src.Cols / 2f, src.Rows / 2f);
+            var imageCenter = new Point2f(source.Cols / 2f, source.Rows / 2f);
             var rotationMat = Cv2.GetRotationMatrix2D(imageCenter, angle, scale);
-            Cv2.WarpAffine(src, dst, rotationMat, src.Size());
+            Cv2.WarpAffine(source, destination, rotationMat, source.Size());
         }
 
-        public string DetectBarcode(Mat mat, double thresh, bool debug = false, double rotation = 0)
+        public string DetectBarcode(Mat mat, double rotation = 0)
         {
-            // load the image and convert it to grayscale
+            // Multiple passes here to test against different thresholds
+            var thresholds = new int[]
+            {
+                80, 120, 160, 200, 220
+            };
+
+            string barcodeText = null;
+            foreach (var t in thresholds)
+            {
+                barcodeText = DetectBarcodeInternal(mat, t, rotation);
+                if (!string.IsNullOrWhiteSpace(barcodeText))
+                    return barcodeText;
+            }
+
+            return barcodeText;
+        }
+
+        private string DetectBarcodeInternal(Mat mat, double threshold, double rotation = 0)
+        {
             var image = mat;
 
             if (rotation != 0)
@@ -26,7 +43,7 @@ namespace WebcamWithOpenCV
             }
 
             var gray = new Mat();
-            var channels = image.Channels();
+            int channels = image.Channels();
             if (channels > 1)
             {
                 Cv2.CvtColor(image, gray, ColorConversionCodes.BGRA2GRAY);
@@ -54,7 +71,7 @@ namespace WebcamWithOpenCV
             Cv2.Blur(gradient, blurred, new Size(9, 9));
 
             var threshImage = new Mat();
-            Cv2.Threshold(blurred, threshImage, thresh, 255, ThresholdTypes.Binary);
+            Cv2.Threshold(blurred, threshImage, threshold, 255, ThresholdTypes.Binary);
 
             // construct a closing kernel and apply it to the thresholded image
             var kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(21, 7));
@@ -67,12 +84,10 @@ namespace WebcamWithOpenCV
 
             //find the contours in the thresholded image, then sort the contours
             //by their area, keeping only the largest one
-            Point[][] contours;
-            HierarchyIndex[] hierarchyIndexes;
             Cv2.FindContours(
                 closed,
-                out contours,
-                out hierarchyIndexes,
+                out var contours,
+                out var hierarchyIndexes,
                 mode: RetrievalModes.CComp,
                 method: ContourApproximationModes.ApproxSimple);
 
@@ -82,15 +97,15 @@ namespace WebcamWithOpenCV
                 return null;
             }
 
-            var contourIndex = 0;
-            var previousArea = 0;
+            int contourIndex = 0;
+            int previousArea = 0;
             var biggestContourRect = Cv2.BoundingRect(contours[0]);
             while (contourIndex >= 0)
             {
                 var contour = contours[contourIndex];
 
                 var boundingRect = Cv2.BoundingRect(contour); //Find bounding rect for each contour
-                var boundingRectArea = boundingRect.Width * boundingRect.Height;
+                int boundingRectArea = boundingRect.Width * boundingRect.Height;
                 if (boundingRectArea > previousArea)
                 {
                     biggestContourRect = boundingRect;
@@ -104,11 +119,11 @@ namespace WebcamWithOpenCV
             Cv2.CvtColor(barcode, barcode, ColorConversionCodes.BGRA2GRAY);
 
             var barcodeClone = barcode.Clone();
-            var barcodeText = GetBarcodeText(barcodeClone);
+            string barcodeText = GetBarcodeText(barcodeClone);
 
             if (string.IsNullOrWhiteSpace(barcodeText))
             {
-                var th = 100;
+                int th = 100;
                 Cv2.Threshold(barcode, barcode, th, 255, ThresholdTypes.Tozero);
                 Cv2.Threshold(barcode, barcode, th, 255, ThresholdTypes.Binary);
                 barcodeText = GetBarcodeText(barcode);

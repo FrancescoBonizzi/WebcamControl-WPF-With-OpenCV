@@ -75,7 +75,7 @@ namespace WebcamWithOpenCV
                                 {
                                     try
                                     {
-                                        string qrCodeData = _qrCodeReader.DetectBarcode(frame, 120);
+                                        string qrCodeData = _qrCodeReader.DetectBarcode(frame);
                                         OnQRCodeRead.Invoke(
                                             this,
                                             new QRCodeReadEventArgs(qrCodeData));
