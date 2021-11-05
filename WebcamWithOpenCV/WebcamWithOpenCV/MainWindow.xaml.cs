@@ -22,7 +22,7 @@ namespace WebcamWithOpenCV
             chkQRCode.IsEnabled = true;
             chkFlip.IsEnabled = true;
             cameraLoading.Visibility = Visibility.Visible;
-            webcamContainer.Visibility = Visibility.Collapsed;
+            webcamContainer.Visibility = Visibility.Hidden;
             btnStop.IsEnabled = false;
             btnStart.IsEnabled = false;
 
@@ -56,8 +56,8 @@ namespace WebcamWithOpenCV
 
         private async void btnStop_Click(object sender, RoutedEventArgs e)
         {
-            chkQRCode.IsChecked = false;
-            chkFlip.IsEnabled = false; 
+            chkQRCode.IsEnabled = false;
+            chkFlip.IsEnabled = false;
 
             try
             {
