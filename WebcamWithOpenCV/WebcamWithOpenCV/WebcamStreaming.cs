@@ -28,6 +28,9 @@ namespace WebcamWithOpenCV
         public event EventHandler OnQRCodeRead;
         private readonly OpenCVQRCodeReader _qrCodeReader;
 
+        private int _currentBarcodeReadFrameCount = 0;
+        private const int _readBarcodeEveryNFrame = 10;
+
         public WebcamStreaming(
             Image imageControlForRendering,
             int frameWidth,
@@ -73,17 +76,23 @@ namespace WebcamWithOpenCV
                             {
                                 if (OnQRCodeRead != null)
                                 {
-                                    try
+                                    // Try read the barcode every n frames to reduce latency
+                                    if (_currentBarcodeReadFrameCount % _readBarcodeEveryNFrame == 0)
                                     {
-                                        string qrCodeData = _qrCodeReader.DetectBarcode(frame);
-                                        OnQRCodeRead.Invoke(
-                                            this,
-                                            new QRCodeReadEventArgs(qrCodeData));
+                                        try
+                                        {
+                                            string qrCodeData = _qrCodeReader.DetectBarcode(frame);
+                                            OnQRCodeRead.Invoke(
+                                                this,
+                                                new QRCodeReadEventArgs(qrCodeData));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Debug.WriteLine(ex);
+                                        }
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.WriteLine(ex);
-                                    }
+
+                                    _currentBarcodeReadFrameCount += 1 % _readBarcodeEveryNFrame;
                                 }
 
                                 // Releases the lock on first not empty frame
