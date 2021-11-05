@@ -173,14 +173,6 @@ namespace WebcamWithOpenCV
                 return string.Empty;
             }
 
-            var writer = new BarcodeWriter
-            {
-                Format = result.BarcodeFormat,
-                Options = { Width = 200, Height = 50, Margin = 4 },
-                Renderer = new ZXing.Rendering.BitmapRenderer()
-            };
-            var barcodeImage = writer.Write(result.Text);
-
             return result.Text;
         }
 
